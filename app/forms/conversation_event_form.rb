@@ -1,4 +1,3 @@
-# app/forms/conversation_event_form.rb
 class ConversationEventForm
   include ActiveModel::Model
   include ActiveModel::Attributes

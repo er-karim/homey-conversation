@@ -1,4 +1,3 @@
-# app/helpers/icon_helper.rb
 module IconHelper
   def icon(name, options = {})
     options[:class] = [ options[:class], "h-5 w-5" ].compact.join(" ")
