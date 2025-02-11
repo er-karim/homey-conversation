@@ -1,0 +1,7 @@
+.space-y-4
+  - if events.any?
+    = render ConversationEventComponent.with_collection(events)
+    = render PaginationComponent.new(current_page: current_page, total_pages: total_pages)
+  - else
+    #empty_state.text-center.py-12
+      p.text-gray-500 No conversation events yet

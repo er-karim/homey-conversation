@@ -1,0 +1,15 @@
+div[class="rounded-lg p-4 mb-4 #{event_class}" id=dom_id(event)]
+  .flex.items-start.gap-3
+    .flex-shrink-0
+      = icon(event.is_a?(Comment) ? "chat" : "status", class: "text-gray-500")
+    .flex-grow
+      .flex.items-center.gap-2
+        span.font-medium = event.author
+        span.text-sm.text-gray-500 = l(event.created_at, format: :long)
+      .mt-1
+        - if event.is_a?(Comment)
+          p.text-gray-700 = event.content
+        - else
+          p.text-gray-700
+            | Status changed to
+            span.ml-1.font-medium = event.project_status

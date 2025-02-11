@@ -1,0 +1,19 @@
+= form_with scope: :conversation_event, url: conversation_events_path, class: "bg-white rounded-lg shadow-sm p-6 space-y-4", data: { controller: "reset-form" } do |f|
+  = f.hidden_field :event_type, value: 'StatusChange'
+
+  .space-y-2
+    = f.label :author, class: "block text-sm font-medium text-gray-700"
+    = f.text_field :author, \
+                  class: "mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", \
+                  placeholder: "Your name"
+
+  .space-y-2
+    = f.label :project_status, class: "block text-sm font-medium text-gray-700"
+    = f.select :project_status, \
+              ConversationEvent::VALID_STATUSES, \
+              { prompt: "Select status" }, \
+              class: "mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+
+  .flex.justify-end
+    = f.submit "Change Status", \
+              class: "inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors"

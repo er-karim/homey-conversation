@@ -1,0 +1,25 @@
+- if total_pages > 1
+  nav.flex.items-center.justify-center.mt-8[aria-label="Pagination"]
+    .flex.items-center.gap-2
+      - if current_page == 1
+        span.relative.inline-flex.items-center.px-4.py-2.text-sm.font-medium.text-gray-300.cursor-not-allowed Previous
+      - else
+        = link_to 'Previous',
+                conversation_events_path(page: current_page - 1),
+                class: "relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md"
+
+      .flex.items-center.gap-2
+        - page_numbers.each do |page|
+          - if page == '...'
+            span.px-3.py-2.text-gray-500 ...
+          - else
+            = link_to page,
+                     conversation_events_path(page: page),
+                     class: "relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md #{page == current_page ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-50'}"
+
+      - if current_page == total_pages
+        span.relative.inline-flex.items-center.px-4.py-2.text-sm.font-medium.text-gray-300.cursor-not-allowed Next
+      - else
+        = link_to 'Next',
+                conversation_events_path(page: current_page + 1),
+                class: "relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md"

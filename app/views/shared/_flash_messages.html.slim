@@ -1,0 +1,21 @@
+#flash_messages.fixed.top-4.right-4.z-50.space-y-2
+  - flash.each do |type, message|
+    div[class="fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-opacity duration-300 #{type.to_s == 'success' ? 'bg-green-50' : 'bg-red-50'}"
+        data-controller="flash"]
+      .flex.items-start.gap-3
+        .flex-shrink-0
+          - if type.to_s == 'success'
+            = icon('check', class: "text-green-400")
+          - else
+            = icon('alert', class: "text-red-400")
+        .flex-grow
+          - if message.is_a?(Hash)
+            p.text-sm.font-medium[class="#{type.to_s == 'success' ? 'text-green-800' : 'text-red-800'}"]
+              span.font-semibold.mr-1 = message[:form_type].titleize + ":"
+              = message[:text]
+          - else
+            p.text-sm.font-medium[class="#{type.to_s == 'success' ? 'text-green-800' : 'text-red-800'}"]
+              = message
+        button.text-sm.font-medium.hover:opacity-75[data-action="flash#dismiss"]
+          span.sr-only Close
+          = icon('close', class: type.to_s == 'success' ? 'text-green-400' : 'text-red-400')

@@ -1,0 +1,17 @@
+doctype html
+html
+  head
+    title Project Conversation
+    meta name="viewport" content="width=device-width,initial-scale=1"
+    = csrf_meta_tags
+    = csp_meta_tag
+
+    link rel="stylesheet" href="https://rsms.me/inter/inter.css"
+    = stylesheet_link_tag "tailwind", "data-turbo-track": "reload"
+    = stylesheet_link_tag "application", "data-turbo-track": "reload"
+    = javascript_importmap_tags
+
+  body.min-h-screen.bg-gradient-to-br.from-indigo-50.to-white
+    = render "shared/flash_messages"
+    main.container.mx-auto.px-4.py-8
+      = yield
