@@ -23,5 +23,12 @@ module HomeyConversation
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Configure assets
+    config.assets.paths << Rails.root.join("app", "assets", "builds")
+    config.assets.paths << Rails.root.join("app", "assets", "fonts")
+
+    # Enable ViewComponent preview paths
+    config.view_component.preview_paths << "#{Rails.root}/spec/components/previews"
   end
 end
