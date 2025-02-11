@@ -1,90 +1,129 @@
+# spec/forms/conversation_event_form_spec.rb
 require 'rails_helper'
 
 RSpec.describe ConversationEventForm do
   describe 'validations' do
-    context 'common validations' do
-      it { is_expected.to validate_presence_of(:author) }
-      it { is_expected.to validate_inclusion_of(:event_type).in_array(%w[Comment StatusChange]) }
+    describe 'event type validation' do
+      subject { described_class.new }
+
+      it 'accepts valid event types' do
+        form = described_class.new(event_type: 'Comment')
+        form.valid?
+        expect(form.errors[:event_type]).to be_empty
+
+        form = described_class.new(event_type: 'StatusChange')
+        form.valid?
+        expect(form.errors[:event_type]).to be_empty
+      end
+
+      it 'rejects invalid event types' do
+        form = described_class.new(event_type: 'Invalid')
+        form.valid?
+        expect(form.errors[:event_type]).to be_present
+      end
     end
 
-    context 'when event_type is Comment' do
+    context 'for comments' do
       subject { described_class.new(event_type: 'Comment') }
 
-      it { is_expected.to validate_presence_of(:content) }
-      it { is_expected.not_to validate_presence_of(:project_status) }
+      it 'requires author' do
+        subject.valid?
+        expect(subject.errors[:author]).to include(ConversationEventForm::ERRORS[:author_blank])
+      end
+
+      it 'requires content' do
+        subject.valid?
+        expect(subject.errors[:content]).to include(ConversationEventForm::ERRORS[:content_blank])
+      end
+
+      it 'does not require project_status' do
+        subject.valid?
+        expect(subject.errors[:project_status]).to be_empty
+      end
     end
 
-    context 'when event_type is StatusChange' do
+    context 'for status changes' do
       subject { described_class.new(event_type: 'StatusChange') }
 
-      it { is_expected.to validate_presence_of(:project_status) }
-      it { is_expected.to validate_inclusion_of(:project_status).in_array(ConversationEvent::VALID_STATUSES) }
-      it { is_expected.not_to validate_presence_of(:content) }
+      it 'requires author' do
+        subject.valid?
+        expect(subject.errors[:author]).to include(ConversationEventForm::ERRORS[:author_blank])
+      end
+
+      it 'requires project_status' do
+        subject.valid?
+        expect(subject.errors[:project_status]).to include(ConversationEventForm::ERRORS[:status_blank])
+      end
+
+      it 'validates project_status inclusion' do
+        subject.project_status = 'Invalid'
+        subject.valid?
+        expect(subject.errors[:project_status]).to include(ConversationEventForm::ERRORS[:invalid_status])
+      end
+
+      it 'does not require content' do
+        subject.valid?
+        expect(subject.errors[:content]).to be_empty
+      end
     end
   end
 
   describe '#save' do
-    context 'when creating a comment' do
-      let(:form) do
-        described_class.new(
+    context 'when record validation fails' do
+      it 'handles ActiveRecord::RecordInvalid and returns errors' do
+        form = described_class.new(
           event_type: 'Comment',
           author: 'John Doe',
-          content: 'Test comment'
+          content: 'Test'
         )
-      end
 
-      it 'creates a new comment' do
-        expect { form.save }.to change(Comment, :count).by(1)
-      end
+        invalid_record = Comment.new
+        invalid_record.errors.add(:base, "Some error")
 
-      it 'sets the correct attributes' do
-        comment = form.save
-        expect(comment).to have_attributes(
-          author: 'John Doe',
-          content: 'Test comment',
-          type: 'Comment'
+        expect_any_instance_of(Comment).to(
+          receive(:save!)
+          .and_raise(ActiveRecord::RecordInvalid.new(invalid_record))
         )
+
+        result = form.save
+        expect(result).not_to be_success
+        expect(result.errors).to be_present
+        expect(result.errors[:base]).to include("Some error")
       end
     end
 
-    context 'when creating a status change' do
-      let(:form) do
-        described_class.new(
+    describe '#attributes_for_save' do
+      it 'returns correct attributes for Comment' do
+        form = described_class.new(
+          event_type: 'Comment',
+          author: 'John Doe',
+          content: 'Test content',
+          project_status: 'Draft'  # Should be ignored
+        )
+
+        result = form.save
+        expect(result.data.attributes.slice('author', 'content', 'project_status'))
+          .to eq({
+            'author' => 'John Doe',
+            'content' => 'Test content',
+            'project_status' => nil
+          })
+      end
+
+      it 'returns correct attributes for StatusChange' do
+        form = described_class.new(
           event_type: 'StatusChange',
           author: 'John Doe',
-          project_status: 'Approved'
+          content: 'Should be ignored',
+          project_status: 'Draft'
         )
-      end
 
-      it 'creates a new status change' do
-        expect { form.save }.to change(StatusChange, :count).by(1)
-      end
-
-      it 'sets the correct attributes' do
-        status_change = form.save
-        expect(status_change).to have_attributes(
-          author: 'John Doe',
-          project_status: 'Approved',
-          type: 'StatusChange'
-        )
-      end
-    end
-
-    context 'with invalid data' do
-      let(:form) do
-        described_class.new(
-          event_type: 'Comment',
-          author: '',
-          content: ''
-        )
-      end
-
-      it 'returns false' do
-        expect(form.save).to be false
-      end
-
-      it 'does not create a new event' do
-        expect { form.save }.not_to change(ConversationEvent, :count)
+        result = form.save
+        expect(result.data.attributes.slice('author', 'project_status'))
+          .to eq({
+            'author' => 'John Doe',
+            'project_status' => 'Draft'
+          })
       end
     end
   end
