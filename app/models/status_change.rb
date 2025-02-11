@@ -1,6 +1,7 @@
 class StatusChange < ConversationEvent
   # Validations
   validates :project_status, presence: true
+  validates :project_status, inclusion: { in: VALID_STATUSES }
 
   # Callbacks
   before_save :set_content
@@ -8,6 +9,6 @@ class StatusChange < ConversationEvent
   private
 
   def set_content
-    self.content = "Changed status to #{project_status}"
+    self.content = "Status changed to #{project_status}"
   end
 end
